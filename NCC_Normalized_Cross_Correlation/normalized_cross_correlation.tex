@@ -1,0 +1,93 @@
+\documentclass{article}
+\usepackage{graphicx}
+
+\begin{document}
+
+\title{Normalized Cross Correlation demystified}
+
+\maketitle
+
+\section{Introduction}
+If you work in the field of Image Processing you will sooner or later come across a term called \textbf{Cross Correlation (CC)} or \textbf{Normalized Cross Correlation}. 
+\newline \newline
+When talking about the context of Image Processing Cross Correlation is commonly used for template matching where we want to find the location of a small image within another matching image.
+\newline \newline
+However, if you simply calculate the (Non-Normalized) Cross Correlation  between template image and matching image, you might get disappointed. To locate the matching image in the template image we need to consider every possible "overlap" between matching and template image. The position of the overlap is uniquely defined by what we call shift. If we now calculate the CC score for every possible shift we obtain what is called CC matrix.
+\newline \newline
+$CC(s_x, s_y) = \sum_{x=0}^{W-1} \sum_{y=0}^{H-1} f(x+s_x,y+s_y) \cdot g(x,y)$
+\newline \newline
+Intuitively, the CC score will be very high if the overlapping regions show the same content (which will be the case if we have found the perfect shift). Therefore, we assume the CC matrix's peak location to represent the optimal shift.
+\newline \newline
+Unfortunately, when implementing this, we might notice that this is in fact not always true. This is not surprising if we take into account that different image regions have different intensity distributions. Since CC simply multiplies and adds up values, the peak is somehow "biased" to occur in an area which contains a lot of large intensity values.
+\newline \newline
+This encourages the normalization of both input images!
+
+\section{Normalization}
+So, the question is what kind of normalization we should able to get a suitable result. In Linear Algebra normalization of a vector is typical done by dividing the vector by a certain value (often a length). So, let's try to employ such a concept for our cross correlation. The question that still remains is what is an appropriate value for the denominator since the CC does not have an upper bound.
+\newline \newline
+Fortunately, we can get help from what is called the Cauchy-Schwarz inequality. It states that for all vectors $u$ and $v$ of an inner product space it is true that
+\newline \newline
+$|<u,v>|^2 \hspace{0.2cm} \leq \hspace{0.2cm}<u,u> \cdot <v,v>$
+\newline \newline
+Equivalently, by taking the square root of both sides, and referring to the norms of the vectors, the inequality is written as
+\newline \newline
+$|<u,v>| \hspace{0.2cm} \leq \hspace{0.2cm} ||<u,u>|| \cdot ||<v,v>||$
+\newline \newline
+Now, let's take a closer look what on what happens if the inner product is a dot product (Euclidean space). In such a setting the dot product can be computed as follows:
+\newline \newline
+$|<u,v>| = |\sum u_i \cdot v_i|$
+\newline \newline
+Well, this looks quite similar to our Cross Correlation formula, doesn't it? 
+\newline \newline
+\textbf{Key insight:} Calculating CC is the same as calculating the dot product between two images.
+\newline\newline
+Well, if this is the case we can easily come up with an upper bound to apply normalization by dividing it by $\hspace{0.2cm}<u,u> \cdot <v,v>$.
+\newline\newline
+Therefore, the normalized cross correlation (NCC) becomes:
+\newline\newline
+$NCC(s_x, s_y) = \frac{\sum_{x=0}^{W-1} \sum_{y=0}^{H-1} f(x+s_x,y+s_y) \cdot g(x,y)}{\sqrt{\sum_{x=0}^{W-1} \sum_{y=0}^{H-1} f(x+s_x, y+s_y)^2 \cdot \sum_{x=0}^{W-1} \sum_{y=0}^{H-1} g(x, y)^2}}$
+\newline\newline\newline
+\textbf{Note:} In the literature the formula is often referred as:
+\newline\newline
+$NCC(s_x, s_y) = \frac{\sum_{x=0}^{W-1} \sum_{y=0}^{H-1} f(x+s_x,y+s_y) \cdot g(x,y)}{\sqrt{E_f^2 \cdot E_g^2}}$
+\newline
+This is simply because the energy $E$ of a signal is defined as $E_f^2 = \sum_{x=0}^{W-1} \sum_{y=0}^{H-1} |f(x,y)|^2$
+
+\section{Zero Normalized Cross Correlation}
+Sometimes when talking about NCC you might here people saying terms like "division by standard deviation". However, when looking at the formula above there is clearly no standard deviation involved at all (yet). This is where the \textbf{Normalized Cross Correlation (ZNCC)} comes into play.
+\newline\newline
+Let's see what happens to our formula if we first substract the mean of both images. In other words:
+\newline\newline
+$\bar{f} = \frac{1}{WH} \sum_{x=0}^{W-1} \sum_{y=0}^{H-1} f(x+s_x,y+s_y)$
+\newline\newline
+$\bar{g} = \frac{1}{WH} \sum_{x=0}^{W-1} \sum_{y=0}^{H-1} g(x,y)$
+\newline\newline\newline
+Now we define $f'$ and $g'$ to be:
+\newline\newline
+$f' = f - \bar{f}$
+\newline\newline
+$g' = g - \bar{g}$
+\newline\newline\newline
+By substituting this into our NCC formula, we obtain what we call the zero normalized cross correlation.
+\newline\newline
+$ZNCC(s_x, s_y) = \frac{\sum_{x=0}^{W-1} \sum_{y=0}^{H-1} f'(x+s_x,y+s_y) \cdot g'(x,y)}{\sqrt{\sum_{x=0}^{W-1} \sum_{y=0}^{H-1} f'(x+s_x, y+s_y)^2 \cdot \sum_{x=0}^{W-1} \sum_{y=0}^{H-1} g'(x, y)^2}}$ \newline\newline\newline
+$=\frac{\sum_{x=0}^{W-1} \sum_{y=0}^{H-1} (f(x+s_x,y+s_y) - \bar{f}(x+s_x,y+s_y)) \cdot (g(x,y)-\bar{g}(x,y)} {\sqrt{\sum_{x=0}^{W-1} \sum_{y=0}^{H-1} (f(x+s_x, y+s_y)-\bar{f}(x,y))^2 \cdot \sum_{x=0}^{W-1} \sum_{y=0}^{H-1} (g(x, y)-\bar{g}(x,y))^2}}$
+\newline\newline\newline
+Finally, we can make a few further observations that will help us to understand whery exactly the variance is hidden in this formula.
+\newline\newline
+First, let's recall the definition of the covariance.
+\newline\newline
+$Cov(f,g) = \frac{1}{WH} \sum_{x=0}^{W-1} \sum_{y=0}^{H-1} (f(x,y) - \bar{f}(x,y)) \cdot (g(x,y) - \bar{g}(x,y))$
+\newline\newline
+Hence, the covariance multiply with $NM$ becomes our nominator.
+\newline\newline\newline
+Next, let's recall the definition of variance. 
+\newline\newline
+$Var(f) = \frac{1}{WH} \sum_{x=0}^{W-1} \sum_{y=0}^{H-1} (f(x,y) - \bar{f}(x,y))^2$
+\newline\newline
+Similarly, we can compute the variance for $g$. Again, we observe that each single sum in the denominator can be express by the variance multiplied with $WH$. \newline Hence, we can say that:
+\newline\newline
+$ZNCC(s_x, s_y) = \frac{NM \cdot Cov(f,g)}{\sqrt{NM \cdot Var(f) \cdot NM \cdot Var(g)}}
+= \frac{Cov(f,g)}{\sqrt{Var(f) \cdot Var(g)}}$
+\end{document}
+
