@@ -12,7 +12,7 @@ If you work in the field of Image Processing you will sooner or later come acros
 \newline \newline
 When talking about the context of Image Processing Cross Correlation is commonly used for template matching where we want to find the location of a small image within another matching image.
 \newline \newline
-However, if you simply calculate the (Non-Normalized) Cross Correlation  between template image and matching image, you might get disappointed. To locate the matching image in the template image we need to consider every possible "overlap" between matching and template image. The position of the overlap is uniquely defined by what we call shift. If we now calculate the CC score for every possible shift we obtain what is called CC matrix.
+However, if you simply calculate the (Non-Normalized) Cross Correlation between the template image and the matching image, you might get disappointed. To locate the matching image in the template image we need to consider every possible "overlap" between matching and template image. The position of the overlap is uniquely defined by what we call shift. If we now calculate the CC score for every possible shift we obtain what is called a CC matrix.
 \newline \newline
 $CC(s_x, s_y) = \sum_{x=0}^{W-1} \sum_{y=0}^{H-1} f(x+s_x,y+s_y) \cdot g(x,y)$
 \newline \newline
@@ -23,7 +23,7 @@ Unfortunately, when implementing this, we might notice that this is in fact not 
 This encourages the normalization of both input images!
 
 \section{Normalization}
-So, the question is what kind of normalization we should able to get a suitable result. In Linear Algebra normalization of a vector is typical done by dividing the vector by a certain value (often a length). So, let's try to employ such a concept for our cross correlation. The question that still remains is what is an appropriate value for the denominator since the CC does not have an upper bound.
+So, the question is what kind of normalization we should able to get a suitable result. In Linear Algebra normalization of a vector is typically done by dividing the vector by a certain value (often a length). So, let's try to employ such a concept for our cross correlation. The question that still remains is what is an appropriate value for the denominator since the CC does not have an upper bound.
 \newline \newline
 Fortunately, we can get help from what is called the Cauchy-Schwarz inequality. It states that for all vectors $u$ and $v$ of an inner product space it is true that
 \newline \newline
